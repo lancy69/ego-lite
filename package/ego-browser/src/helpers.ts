@@ -283,6 +283,11 @@ export async function taskSpace(
   nameOrId,
   options: { profileId?: string } = {},
 ) {
+  if (typeof nameOrId !== "string" && typeof nameOrId !== "number") {
+    throw new TypeError(
+      `taskSpace: expected a task space name (string) or id (number), got ${nameOrId === null ? "null" : typeof nameOrId}`,
+    );
+  }
   validatePublicApiOptions("taskSpace", options);
   const { profileId } = options;
   if (profileId === undefined) {

@@ -452,6 +452,47 @@ test("taskSpace does not reuse an existing name when a profile is explicit", asy
   assert.deepEqual(calls, [["listTaskSpaces"]]);
 });
 
+test("taskSpace rejects invalid locators before calling Ego Lite", async () => {
+  const calls = [];
+  await withEgo(
+    new Proxy(
+      {},
+      {
+        get(_target, property) {
+          calls.push(property);
+          throw new Error("must not access Ego Lite");
+        },
+      },
+    ),
+    async () => {
+      for (const [value, received] of [
+        [undefined, "undefined"],
+        [null, "null"],
+        [true, "boolean"],
+        [false, "boolean"],
+        [{}, "object"],
+        [[], "object"],
+        [() => {}, "function"],
+        [Symbol("space"), "symbol"],
+        [7n, "bigint"],
+      ]) {
+        for (const options of [undefined, { profileId: "Profile 2" }]) {
+          await assert.rejects(() => taskSpace(value, options), {
+            name: "TypeError",
+            message: `taskSpace: expected a task space name (string) or id (number), got ${received}`,
+          });
+        }
+      }
+      await assert.rejects(() => taskSpace(), {
+        name: "TypeError",
+        message:
+          "taskSpace: expected a task space name (string) or id (number), got undefined",
+      });
+    },
+  );
+  assert.deepEqual(calls, []);
+});
+
 test("taskSpace rejects profile selection when resuming a numeric space id", async () => {
   await withEgo(
     {

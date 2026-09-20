@@ -440,6 +440,9 @@ const task = await claimTaskSpace(7);
 const userPage = task.userPage();
 ```
 
+`listTaskSpaces()` entries use `id`, not `spaceId`; resume an existing agent-owned
+space with `await taskSpace(entry.id)`.
+
 When the task succeeds, close the TaskSpace by default with
 `await task.finish({ keep: [] })`. Call `finish()` exactly once and wait for it
 to resolve before reporting completion.
